@@ -20,11 +20,12 @@ RUN apt-get update \
        texlive-science \
     && rm -rf /var/lib/apt/lists/*
 
-RUN useradd --create-home --uid 1000 --shell /bin/bash ximera \
-    && mkdir -p /workspace \
-    && chown -R ximera:ximera /workspace
+# The official Node image already provides a non-root user named `node`
+# with UID/GID 1000. Reuse it rather than creating a second UID 1000 user.
+RUN mkdir -p /workspace \
+    && chown -R node:node /workspace
 
-USER ximera
+USER node
 WORKDIR /workspace
 
 CMD ["bash"]
