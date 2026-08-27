@@ -98,6 +98,7 @@ The container is run with:
 - `--userns=keep-id`, so bind-mounted files remain owned by the invoking host user;
 - `--security-opt=no-new-privileges`;
 - `--cap-drop=ALL`;
+- `--entrypoint /bin/bash`, so RHEL Podman/runc does not depend on resolving the relative `docker-entrypoint.sh` inherited from the official Node image;
 - SELinux relabeling (`:Z`) on the two bind mounts.
 
 No network ports are exposed in the initial environment, and no existing Xronos container/network is joined.
