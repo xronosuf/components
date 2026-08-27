@@ -30,17 +30,17 @@ RUN set -eux; \
     installer_dir="$(find /tmp -maxdepth 1 -type d -name 'install-tl-*' | head -n 1)"; \
     perl "$installer_dir/install-tl" \
       --no-interaction \
-      --scheme=small \
+      --scheme=scheme-small \
       --no-doc-install \
       --no-src-install \
       --texdir="$TEXLIVE_ROOT"; \
     "$TEXLIVE_ROOT/bin/x86_64-linux/tlmgr" install \
       collection-fontsrecommended \
       collection-latexextra \
+      collection-mathscience \
       collection-pictures \
       collection-plaingeneric \
       collection-pstricks \
-      collection-science \
       dvisvgm \
       tex4ht; \
     rm -rf /tmp/install-tl-* /tmp/install-tl-unx.tar.gz; \
