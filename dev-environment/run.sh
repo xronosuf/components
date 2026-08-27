@@ -17,13 +17,16 @@ if [[ ! -d "${TESTFILES_DIR}/.git" ]]; then
   exit 1
 fi
 
+# RHEL Podman/runc does not reliably resolve the relative docker-entrypoint.sh
+# inherited from the official Node image. Override it with an absolute shell
+# entrypoint so the same image launches consistently under Docker and Podman.
 exec podman run --rm -it \
   --name "${CONTAINER_NAME}" \
   --userns=keep-id \
   --security-opt=no-new-privileges \
   --cap-drop=ALL \
+  --entrypoint /bin/bash \
   --volume "${COMPONENTS_DIR}:/workspace/components:Z" \
   --volume "${TESTFILES_DIR}:/workspace/testFiles:Z" \
   --workdir /workspace/testFiles \
-  "${IMAGE_NAME}" \
-  bash
+  "${IMAGE_NAME}"
