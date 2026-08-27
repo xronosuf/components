@@ -95,11 +95,14 @@ host testFiles checkout  -> /workspace/testFiles
 The container is run with:
 
 - `--rm`, so the container itself is disposable;
-- `--userns=keep-id`, so bind-mounted files remain owned by the invoking host user;
+- `--user 0`, because the UF test host's rootless Podman storage cannot execute image binaries as the image's non-root `node` UID;
+- rootless Podman, so container UID 0 maps to the invoking unprivileged host account and does **not** grant host-root privileges;
 - `--security-opt=no-new-privileges`;
 - `--cap-drop=ALL`;
 - `--entrypoint /bin/bash`, so RHEL Podman/runc does not depend on resolving the relative `docker-entrypoint.sh` inherited from the official Node image;
 - SELinux relabeling (`:Z`) on the two bind mounts.
+
+The `--userns=keep-id` mode is intentionally not used on this host: diagnostics showed the same executable-permission failure under that mapping. If this environment is used on a different host, the user mapping can be revisited there.
 
 No network ports are exposed in the initial environment, and no existing Xronos container/network is joined.
 
