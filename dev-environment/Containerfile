@@ -1,33 +1,53 @@
 FROM node:22-trixie
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV TEXLIVE_YEAR=2026
+ENV TEXLIVE_ROOT=/usr/local/texlive/2026
+ENV PATH=/usr/local/texlive/2026/bin/x86_64-linux:$PATH
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
        ca-certificates \
        curl \
-       dvisvgm \
        git \
        make \
+       perl \
        python3 \
-       texlive-base \
-       texlive-binaries \
-       texlive-latex-base \
-       texlive-latex-extra \
-       texlive-latex-recommended \
-       texlive-fonts-recommended \
-       texlive-pictures \
-       texlive-pstricks \
-       texlive-science \
+       tar \
+       xz-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# Use Debian Trixie rather than Bookworm so the development image carries a
-# current tex4ht/TeX Live stack. The split @ximera/answer postprocessor relies
-# on tex4ht's MathJax wrapper elements (mathjax-inline/mathjax-block), behavior
-# that is present in current TeX Live but absent from the Bookworm TeX Live 2022
-# packages. Keep this build environment close to the current upstream Ximera
-# development toolchain rather than compensating for old tex4ht output in the
-# component runtime.
+# TeX is accessibility-critical for this project. Do not rely on Debian's
+# bundled TeX Live snapshot: the development environment requires TeX Live
+# 2026 (and therefore a distribution newer than 2025-10-31). Install the
+# official upstream TeX Live release into its year-qualified prefix, then add
+# the Ximera/tex4ht collections required by the compatibility corpus.
+RUN set -eux; \
+    cd /tmp; \
+    curl -fsSL -o install-tl-unx.tar.gz \
+      https://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz; \
+    tar -xzf install-tl-unx.tar.gz; \
+    installer_dir="$(find /tmp -maxdepth 1 -type d -name 'install-tl-*' | head -n 1)"; \
+    perl "$installer_dir/install-tl" \
+      --no-interaction \
+      --scheme=small \
+      --no-doc-install \
+      --no-src-install \
+      --texdir="$TEXLIVE_ROOT"; \
+    "$TEXLIVE_ROOT/bin/x86_64-linux/tlmgr" install \
+      collection-fontsrecommended \
+      collection-latexextra \
+      collection-pictures \
+      collection-plaingeneric \
+      collection-pstricks \
+      collection-science \
+      dvisvgm \
+      tex4ht; \
+    rm -rf /tmp/install-tl-* /tmp/install-tl-unx.tar.gz; \
+    kpsewhich --version | head -n 1; \
+    pdflatex --version | head -n 1; \
+    tex4ht --version 2>&1 | head -n 3 || true; \
+    dvisvgm --version | head -n 1
 
 # This image is intended to run under rootless Podman. On the UF test host,
 # processes using the image's non-root `node` UID cannot execute binaries from
