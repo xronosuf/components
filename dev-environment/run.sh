@@ -18,11 +18,13 @@ if [[ ! -d "${TESTFILES_DIR}/.git" ]]; then
 fi
 
 # RHEL Podman/runc does not reliably resolve the relative docker-entrypoint.sh
-# inherited from the official Node image. Override it with an absolute shell
-# entrypoint so the same image launches consistently under Docker and Podman.
+# inherited from the official Node image, so use an absolute shell entrypoint.
+# The UF test host also cannot execute image binaries as the image's non-root
+# `node` UID. Run as container UID 0 instead. Because Podman itself is rootless,
+# container UID 0 maps to the invoking unprivileged host account, not host root.
 exec podman run --rm -it \
   --name "${CONTAINER_NAME}" \
-  --userns=keep-id \
+  --user 0 \
   --security-opt=no-new-privileges \
   --cap-drop=ALL \
   --entrypoint /bin/bash \
