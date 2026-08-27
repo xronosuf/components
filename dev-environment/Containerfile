@@ -6,6 +6,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
        ca-certificates \
        curl \
+       dvisvgm \
        git \
        make \
        python3 \
@@ -17,7 +18,6 @@ RUN apt-get update \
        texlive-fonts-recommended \
        texlive-pictures \
        texlive-science \
-       tex4ht \
     && rm -rf /var/lib/apt/lists/*
 
 RUN useradd --create-home --uid 1000 --shell /bin/bash ximera \
