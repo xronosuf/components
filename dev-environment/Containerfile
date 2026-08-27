@@ -1,0 +1,30 @@
+FROM node:22-bookworm
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+       ca-certificates \
+       curl \
+       git \
+       make \
+       python3 \
+       texlive-base \
+       texlive-binaries \
+       texlive-latex-base \
+       texlive-latex-extra \
+       texlive-latex-recommended \
+       texlive-fonts-recommended \
+       texlive-pictures \
+       texlive-science \
+       tex4ht \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN useradd --create-home --uid 1000 --shell /bin/bash ximera \
+    && mkdir -p /workspace \
+    && chown -R ximera:ximera /workspace
+
+USER ximera
+WORKDIR /workspace
+
+CMD ["bash"]
