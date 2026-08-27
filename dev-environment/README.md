@@ -12,13 +12,15 @@ This directory defines an isolated Podman development environment for the new Xi
 
 ## Current image contents
 
-The initial image is based on `node:22-bookworm` and includes:
+The image is based on `node:22-trixie` and includes:
 
 - Node.js 22 and npm;
 - git;
 - make and Python 3;
-- TeX Live packages needed for ordinary Ximera/tex4ht compilation;
+- a current Debian TeX Live/tex4ht stack needed for Ximera's MathJax-oriented HTML output;
 - `pdflatex`, `latex`, `tex4ht`, `t4ht`, and `dvisvgm`.
+
+The Trixie base is deliberate. Debian Bookworm carries TeX Live 2022, while the current Ximera component pipeline is developed against substantially newer tex4ht behavior. In particular, `@ximera/answer` post-processing expects tex4ht's MathJax output to wrap inline/display math in `.mathjax-inline` / `.mathjax-block` elements. Using the newer Debian base keeps the development container closer to the upstream build contract instead of adding compatibility workarounds for an obsolete tex4ht output shape.
 
 Sage is intentionally not installed yet. The first compatibility build should tell us which non-Sage pages work before we expand the image.
 
@@ -120,7 +122,7 @@ Inside the container:
 bash /workspace/components/dev-environment/verify-toolchain.sh
 ```
 
-This checks that the expected Node, npm, Git, TeX, tex4ht/t4ht, and dvisvgm commands are present.
+This checks that the expected Node, npm, Git, TeX, tex4ht/t4ht, and dvisvgm commands are present and reports the TeX Live version so build-environment drift is visible in diagnostics.
 
 ## First compatibility build
 
@@ -152,7 +154,7 @@ bash /workspace/components/dev-environment/install-local-core.sh
 npm run build
 ```
 
-The helper runs `npm pack` on the local core source and installs the resulting tarball into `testFiles` with `--no-save --package-lock=false`. This copies the package into `testFiles/node_modules` instead of linking it, so dependencies such as `@modulus-learning/agent` resolve in the same way they do for the published package. Other `@ximera/*` packages remain on their published versions unless explicitly overlaid later.
+The helper runs `npm pack` on the local core source and installs the resulting tarball into `testFiles` with `--no-save --package-lock=false`. This copies the package into `testFiles/node_modules` instead of linking it, so dependencies such as `@modulus-learning/agent` resolve in the same way they do in the published package. Other `@ximera/*` packages remain on their published versions unless explicitly overlaid later.
 
 ## Local static serving later
 
