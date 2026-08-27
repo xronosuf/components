@@ -17,6 +17,7 @@ RUN apt-get update \
        texlive-latex-recommended \
        texlive-fonts-recommended \
        texlive-pictures \
+       texlive-pstricks \
        texlive-science \
     && rm -rf /var/lib/apt/lists/*
 
