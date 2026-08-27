@@ -141,6 +141,19 @@ The first build is exploratory. Failures should be recorded rather than worked a
 
 In particular, the current corpus contains Sage/runtime-Sage pages. Sage is intentionally absent from this first image, so those tests may expose expected unsupported/failure behavior until the Sage architecture is implemented.
 
+## Testing local component changes
+
+Installing a local package directory directly with npm creates a symlink. For `@ximera/core`, that makes Node/esbuild resolve the package's dependencies relative to `/workspace/components/core`, outside the compatibility corpus's `node_modules` tree. This differs from the resolution behavior of a published npm package.
+
+To test development changes to core while preserving normal published-package semantics, use the packed overlay helper inside the container:
+
+```bash
+bash /workspace/components/dev-environment/install-local-core.sh
+npm run build
+```
+
+The helper runs `npm pack` on the local core source and installs the resulting tarball into `testFiles` with `--no-save --package-lock=false`. This copies the package into `testFiles/node_modules` instead of linking it, so dependencies such as `@modulus-learning/agent` resolve in the same way they do for the published package. Other `@ximera/*` packages remain on their published versions unless explicitly overlaid later.
+
 ## Local static serving later
 
 The initial milestone is compilation only. Once useful HTML exists in `dist/`, add a small HTTP-serving step rather than opening pages through `file://`. That server can initially bind only to localhost on the test host. A UF-facing reverse-proxy route should be added only after the generated pages and browser runtime are understood.
