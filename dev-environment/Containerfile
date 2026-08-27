@@ -1,4 +1,4 @@
-FROM node:22-bookworm
+FROM node:22-trixie
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -20,6 +20,14 @@ RUN apt-get update \
        texlive-pstricks \
        texlive-science \
     && rm -rf /var/lib/apt/lists/*
+
+# Use Debian Trixie rather than Bookworm so the development image carries a
+# current tex4ht/TeX Live stack. The split @ximera/answer postprocessor relies
+# on tex4ht's MathJax wrapper elements (mathjax-inline/mathjax-block), behavior
+# that is present in current TeX Live but absent from the Bookworm TeX Live 2022
+# packages. Keep this build environment close to the current upstream Ximera
+# development toolchain rather than compensating for old tex4ht output in the
+# component runtime.
 
 # This image is intended to run under rootless Podman. On the UF test host,
 # processes using the image's non-root `node` UID cannot execute binaries from
