@@ -20,12 +20,14 @@ RUN apt-get update \
        texlive-science \
     && rm -rf /var/lib/apt/lists/*
 
-# The official Node image already provides a non-root user named `node`
-# with UID/GID 1000. Reuse it rather than creating a second UID 1000 user.
-RUN mkdir -p /workspace \
-    && chown -R node:node /workspace
+# This image is intended to run under rootless Podman. On the UF test host,
+# processes using the image's non-root `node` UID cannot execute binaries from
+# the rootless container storage, while container UID 0 works normally.
+# In rootless Podman, container UID 0 maps to the invoking unprivileged host
+# user; it does not grant host-root privileges.
+RUN mkdir -p /workspace
 
-USER node
+USER root
 WORKDIR /workspace
 
 CMD ["bash"]
