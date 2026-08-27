@@ -16,11 +16,18 @@ The image is based on `node:22-trixie` and includes:
 
 - Node.js 22 and npm;
 - git;
-- make and Python 3;
-- a current Debian TeX Live/tex4ht stack needed for Ximera's MathJax-oriented HTML output;
-- `pdflatex`, `latex`, `tex4ht`, `t4ht`, and `dvisvgm`.
+- make, Perl, and Python 3;
+- **official upstream TeX Live 2026** installed under `/usr/local/texlive/2026`;
+- the LaTeX, tex4ht, graphics, PSTricks, science, and font collections needed by the compatibility corpus;
+- `pdflatex`, `latex`, `tex4ht`, `t4ht`, and `dvisvgm` from that TeX Live 2026 tree.
 
-The Trixie base is deliberate. Debian Bookworm carries TeX Live 2022, while the current Ximera component pipeline is developed against substantially newer tex4ht behavior. In particular, `@ximera/answer` post-processing expects tex4ht's MathJax output to wrap inline/display math in `.mathjax-inline` / `.mathjax-block` elements. Using the newer Debian base keeps the development container closer to the upstream build contract instead of adding compatibility workarounds for an obsolete tex4ht output shape.
+### TeX Live date is a hard requirement
+
+For Ximera/Xronos work, TeX is not merely a generic compiler dependency. Accessibility behavior introduced after October 31, 2025 is required, and some of that behavior is coupled to the TeX/tex4ht/MathJax pipeline. Therefore the development environment must use a TeX distribution dated **after 2025-10-31**. The current pinned requirement is TeX Live **2026**.
+
+Do not replace the upstream TeX Live installation with the Debian-provided TeX packages merely because the base image contains them. Debian stable snapshots can lag the TeX Live release cycle substantially. The toolchain verifier intentionally fails unless the active TeX reports TeX Live 2026, making accidental regressions visible immediately.
+
+Using current TeX Live is also relevant to the component compatibility work: `@ximera/answer` post-processing expects tex4ht's MathJax-oriented output structure, including `.mathjax-inline` / `.mathjax-block` wrappers. Testing against an obsolete tex4ht can therefore create failures that are artifacts of the build environment rather than defects in the component runtime.
 
 Sage is intentionally not installed yet. The first compatibility build should tell us which non-Sage pages work before we expand the image.
 
@@ -78,6 +85,8 @@ To override it:
 IMAGE_NAME=my-ximera-dev:local bash dev-environment/build.sh
 ```
 
+The TeX Live 2026 installation is performed while building the image, so an image rebuild requires network access to CTAN/TUG mirrors and is substantially heavier than a source-only rebuild. Source changes still do not require rebuilding the image unless the toolchain itself changes.
+
 ## Start an interactive development container
 
 The run helper bind-mounts both repositories and starts in `/workspace/testFiles`:
@@ -122,7 +131,7 @@ Inside the container:
 bash /workspace/components/dev-environment/verify-toolchain.sh
 ```
 
-This checks that the expected Node, npm, Git, TeX, tex4ht/t4ht, and dvisvgm commands are present and reports the TeX Live version so build-environment drift is visible in diagnostics.
+This checks that the expected Node, npm, Git, TeX, tex4ht/t4ht, and dvisvgm commands are present. It also verifies that the active TeX distribution is TeX Live 2026 and reports the active TEXMF root so build-environment drift is visible in diagnostics.
 
 ## First compatibility build
 
