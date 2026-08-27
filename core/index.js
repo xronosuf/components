@@ -9,10 +9,10 @@
 // `@ximera/core/conformance` instead — see CONTRACT §2.
 
 import { boot } from './kernel.js';
-import { ModulusAgent } from '@modulus-learning/agent';
+import { createModulusAgent } from '@modulus-learning/agent';
 
 export * from './kernel.js';
 
 // Fire boot on module load. `boot` awaits agent.onReady internally, so
 // this doesn't block the module resolution graph.
-boot(new ModulusAgent());
+boot(createModulusAgent());
