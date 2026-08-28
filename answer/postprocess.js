@@ -123,9 +123,12 @@ export function parseAnswerOptions(raw) {
 export function extractAnswerBlanks($) {
   let counter = 0;
 
-  $('span.mathjax-inline, div.mathjax-block').each((_, el) => {
-    const isBlock = el.tagName.toLowerCase() === 'div';
+  // tex4ht has emitted display math as both <div class="mathjax-block"> and,
+  // in current TeX Live 2026, <span class="mathjax-block">. Treat the class
+  // as the semantic contract rather than depending on the historical tag.
+  $('span.mathjax-inline, .mathjax-block').each((_, el) => {
     const $el = $(el);
+    const isBlock = $el.hasClass('mathjax-block');
     let html = $el.html();
     const matches = findAnswerMatches(html);
     if (matches.length === 0) return;
@@ -187,7 +190,8 @@ export function extractAnswerBlanks($) {
     }
 
     // Wrap the math element + state-holder spans in a container. Use <div>
-    // for block math (a <span> cannot validly contain a <div>).
+    // for display math (a <span> cannot validly contain a historical div
+    // wrapper, and display semantics should not depend on tex4ht's tag choice).
     const wrapperTag = isBlock ? 'div' : 'span';
     const $stateHolders = $el.nextAll('.answer.respondable').slice(0, toInsert.length);
     $el.add($stateHolders).wrapAll(`<${wrapperTag} class="ximera-math-with-answers"></${wrapperTag}>`);
