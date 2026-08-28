@@ -49,6 +49,15 @@ RUN set -eux; \
     tex4ht --version 2>&1 | head -n 3 || true; \
     dvisvgm --version | head -n 1
 
+# Debian's /etc/profile resets PATH for login shells. Our Podman helpers use
+# `bash -lc`, so persist the TeX Live prefix through /etc/profile.d as well as
+# the image-level ENV above. This keeps the official TeX Live 2026 toolchain
+# active in both ordinary processes and login-shell diagnostics/builds.
+RUN printf '%s\n' \
+      'export PATH=/usr/local/texlive/2026/bin/x86_64-linux:$PATH' \
+      > /etc/profile.d/texlive.sh \
+    && chmod 0644 /etc/profile.d/texlive.sh
+
 # This image is intended to run under rootless Podman. On the UF test host,
 # processes using the image's non-root `node` UID cannot execute binaries from
 # the rootless container storage, while container UID 0 works normally.
